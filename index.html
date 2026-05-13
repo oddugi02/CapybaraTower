@@ -20,6 +20,16 @@
     />
     <!-- Retro Bitmap Font -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/Galmuri@latest/dist/Galmuri.css" />
+
+    <script>
+      /** GitHub Pages 하위 경로(/CapybaraTower) 접속 시 끝에 /가 없으면 경로 오류가 발생하므로 자동 추가 */
+      (function() {
+        const path = window.location.pathname;
+        if (path.endsWith('/CapybaraTower')) {
+          window.location.replace(path + '/');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app">
