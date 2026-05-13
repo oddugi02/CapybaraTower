@@ -105,6 +105,12 @@ export class StackGame {
   private readonly defaultWeldScale = new THREE.Vector3(1, 1, 1);
   private readonly bodyQuat = new CQuat();
   private readonly originCamY: number;
+  private readonly onRender?: () => void;
+
+  private readonly bubbleSprite: THREE.Sprite;
+  private readonly bubbleCanvas: HTMLCanvasElement;
+  private readonly bubbleCtx: CanvasRenderingContext2D;
+  private readonly bubbleTex: THREE.CanvasTexture;
 
   private readonly scoreEl: HTMLElement | null;
   private readonly overlayEl: HTMLElement | null;
@@ -119,12 +125,14 @@ export class StackGame {
     capy: THREE.Group;
     guests: THREE.Group;
     canvas: HTMLCanvasElement;
+    onRender?: () => void;
   }) {
     this.scene = opts.scene;
     this.camera = opts.camera;
     this.capy = opts.capy;
     this.guests = opts.guests;
     this.canvas = opts.canvas;
+    this.onRender = opts.onRender;
     this.originCamY = opts.camera.position.y;
 
     this.scoreEl = document.getElementById("score-val");
@@ -203,6 +211,25 @@ export class StackGame {
     this.groundBody.addShape(new Box(new Vec3(14 * S, 0.08 * S, 10 * S)));
     this.groundBody.position.set(0, -0.18 * S, 0);
     this.world.addBody(this.groundBody);
+
+    // 말풍선 초기화
+    this.bubbleCanvas = document.createElement("canvas");
+    this.bubbleCanvas.width = 256;
+    this.bubbleCanvas.height = 128;
+    this.bubbleCtx = this.bubbleCanvas.getContext("2d")!;
+    this.bubbleTex = new THREE.CanvasTexture(this.bubbleCanvas);
+    this.bubbleSprite = new THREE.Sprite(new THREE.SpriteMaterial({ 
+      map: this.bubbleTex, 
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+    }));
+    this.bubbleSprite.renderOrder = 999;
+    // 카피바라 머리 위 앞쪽 (로컬 좌표)
+    this.bubbleSprite.position.set(0.8, 2.2, 1.0); 
+    this.bubbleSprite.scale.set(1.4, 0.7, 1);
+    this.bubbleSprite.visible = false;
+    this.capy.add(this.bubbleSprite);
 
     const canvas = this.canvas;
     canvas.addEventListener(
@@ -526,11 +553,59 @@ export class StackGame {
   private readonly fireworks: Fireworks;
   private readonly fireworksCanvas: HTMLCanvasElement | null;
 
+  private updateBubble(text: string): void {
+    const ctx = this.bubbleCtx;
+    const w = this.bubbleCanvas.width;
+    const h = this.bubbleCanvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // 말풍선 배경 (둥근 사각형)
+    const r = 24;
+    const pad = 10;
+    ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+    ctx.beginPath();
+    ctx.roundRect(pad, pad, w - pad * 2, h - pad * 2 - 20, r);
+    ctx.fill();
+    ctx.strokeStyle = "#3d2e22";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // 꼬리
+    ctx.beginPath();
+    ctx.moveTo(w * 0.4, h - pad * 2 - 20);
+    ctx.lineTo(w * 0.3, h - 10);
+    ctx.lineTo(w * 0.5, h - pad * 2 - 20);
+    ctx.fill();
+    ctx.stroke();
+
+    // 텍스트
+    ctx.fillStyle = "#3d2e22";
+    ctx.font = "bold 40px 'Galmuri11', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, w / 2, (h - 30) / 2);
+
+    this.bubbleTex.needsUpdate = true;
+  }
+
   private downloadJpeg(): void {
+    const messages = ["무념무상", "-ㅅ-", "멍...", "졸려...", "평온", "온천 최고", "둥실둥실"];
+    const msg = messages[Math.floor(Math.random() * messages.length)];
+    
+    this.updateBubble(msg);
+    this.bubbleSprite.visible = true;
+    
+    // 강제 렌더링 (말풍선 포함)
+    if (this.onRender) this.onRender();
+
     const a = document.createElement("a");
     a.download = "capy-zen-stack.jpg";
     a.href = this.canvas.toDataURL("image/jpeg", 0.92);
     a.click();
+
+    this.bubbleSprite.visible = false;
+    // 다시 렌더링해서 말풍선 지우기
+    if (this.onRender) this.onRender();
   }
 
   private triggerWin(): void {

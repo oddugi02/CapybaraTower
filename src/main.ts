@@ -61,6 +61,9 @@ const game = new StackGame({
   capy,
   guests,
   canvas,
+  onRender: () => {
+    renderer.render(scene, camera);
+  },
 });
 
 function applyViewport(): void {
