@@ -39,7 +39,8 @@ const MAX_OBSTACLE_FALL_SPEED = 1.0;
 const KIN_FALL_SUBSTEP_MAX_SEC = 1 / 120;
 const KIN_FALL_MAX_DOWN_PER_SUB = 0.018 * OU;
 /** 동시 낙하 허용 개수 — 한 번에 하나씩 */
-const WIN_STACK_TOP_FROM_TOP = 0.082;
+/** 탑 꼭대기가 화면 상단 어느 정도(0~1)에 도달해야 성공인지 (기존 0.082 -> 0.18로 완화) */
+const WIN_STACK_TOP_FROM_TOP = 0.18;
 
 interface Piece {
   mesh: THREE.Object3D;
@@ -595,16 +596,40 @@ export class StackGame {
     this.updateBubble(msg);
     this.bubbleSprite.visible = true;
     
-    // 강제 렌더링 (말풍선 포함)
+    // 고화질 캡처를 위해 일시적으로 해상도 상향 (최소 높이 1280px 타겟)
+    const originalW = this.canvas.width;
+    const originalH = this.canvas.height;
+    const exportHeight = 1280;
+    const aspect = originalW / originalH;
+    const exportWidth = exportHeight * aspect;
+
+    // 캔버스 크기 강제 조정 (CSS 크기는 유지)
+    const oldW = this.canvas.style.width;
+    const oldH = this.canvas.style.height;
+    
+    this.canvas.width = exportWidth;
+    this.canvas.height = exportHeight;
+    
+    // 카메라 및 렌더링 강제 업데이트
+    this.camera.aspect = aspect;
+    this.camera.updateProjectionMatrix();
+    
     if (this.onRender) this.onRender();
 
     const a = document.createElement("a");
     a.download = "capy-zen-stack.jpg";
-    a.href = this.canvas.toDataURL("image/jpeg", 0.92);
+    a.href = this.canvas.toDataURL("image/jpeg", 0.95);
     a.click();
 
+    // 원래대로 복구
+    this.canvas.width = originalW;
+    this.canvas.height = originalH;
+    this.canvas.style.width = oldW;
+    this.canvas.style.height = oldH;
+    this.camera.aspect = aspect;
+    this.camera.updateProjectionMatrix();
     this.bubbleSprite.visible = false;
-    // 다시 렌더링해서 말풍선 지우기
+    
     if (this.onRender) this.onRender();
   }
 
