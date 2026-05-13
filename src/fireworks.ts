@@ -40,20 +40,21 @@ export class Fireworks {
   private launch() {
     const W = this.canvas.width;
     const H = this.canvas.height;
+    const dpr = window.devicePixelRatio || 1;
     const cx = W * (0.15 + Math.random() * 0.7);
     const cy = H * (0.1 + Math.random() * 0.45);
     const hue = Math.random() * 360;
     const count = 52 + Math.floor(Math.random() * 28);
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2;
-      const speed = 2.5 + Math.random() * 4.5;
+      const speed = (2.5 + Math.random() * 5.0) * dpr;
       this.particles.push({
         x: cx, y: cy,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         alpha: 1,
-        size: 2.5 + Math.random() * 3.5,
-        color: `hsl(${hue + Math.random() * 40 - 20}, 90%, 65%)`,
+        size: (2.5 + Math.random() * 3.5) * dpr,
+        color: `hsl(${hue + Math.random() * 40 - 20}, 95%, 70%)`,
         trail: [],
       });
     }
@@ -65,16 +66,17 @@ export class Fireworks {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+    const dpr = window.devicePixelRatio || 1;
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.trail.push({ x: p.x, y: p.y });
-      if (p.trail.length > 5) p.trail.shift();
+      if (p.trail.length > 6) p.trail.shift();
 
-      p.vx *= 0.96;
-      p.vy = p.vy * 0.96 + 0.18;
+      p.vx *= 0.95;
+      p.vy = p.vy * 0.95 + 0.15 * dpr;
       p.x += p.vx;
       p.y += p.vy;
-      p.alpha -= 0.018;
+      p.alpha -= 0.015;
 
       if (p.alpha <= 0) { this.particles.splice(i, 1); continue; }
 
@@ -82,9 +84,9 @@ export class Fireworks {
       for (let t = 0; t < p.trail.length; t++) {
         const tr = p.trail[t];
         ctx.beginPath();
-        ctx.arc(tr.x, tr.y, p.size * 0.5, 0, Math.PI * 2);
+        ctx.arc(tr.x, tr.y, p.size * 0.6, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.alpha * (t / p.trail.length) * 0.4;
+        ctx.globalAlpha = p.alpha * (t / p.trail.length) * 0.5;
         ctx.fill();
       }
       // particle
