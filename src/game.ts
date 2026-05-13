@@ -39,8 +39,7 @@ const MAX_OBSTACLE_FALL_SPEED = 1.0;
 const KIN_FALL_SUBSTEP_MAX_SEC = 1 / 120;
 const KIN_FALL_MAX_DOWN_PER_SUB = 0.018 * OU;
 /** 동시 낙하 허용 개수 — 한 번에 하나씩 */
-/** 탑 꼭대기가 화면 상단 어느 정도(0~1)에 도달해야 성공인지 (0.18 정도로 널널하게 설정) */
-const WIN_STACK_TOP_FROM_TOP = 0.18;
+const WIN_SCORE_TARGET = 36;
 
 interface Piece {
   mesh: THREE.Object3D;
@@ -646,14 +645,10 @@ export class StackGame {
     document.getElementById("win-actions")?.classList.remove("hidden");
   }
 
-  /** 탑 꼭대기가 화면 최상단 근처에 오면 성공 */
+  /** 탑 층수가 목표치에 도달하면 성공 */
   private checkWin(): void {
     if (this.gameOver || this.gameWon) return;
-    if (!this.pieces.some((p) => p.welded)) return;
-    const peakY = this.getStackPeakWorldY();
-    const pc = this.platformCenterWorld;
-    const fromTop = this.worldToScreenFromTop(pc.x, peakY, pc.z);
-    if (fromTop <= WIN_STACK_TOP_FROM_TOP) this.triggerWin();
+    if (this.score >= WIN_SCORE_TARGET) this.triggerWin();
   }
 
   private syncPlatform(): void {

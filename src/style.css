@@ -69,6 +69,21 @@ html, body {
   letter-spacing: 0.02em;
 }
 
+.game-hud__goal {
+  position: absolute;
+  top: 0;
+  left: calc(-50vw + max(1rem, env(safe-area-inset-left)));
+  font-size: 0.85rem;
+  font-weight: 500;
+  opacity: 0.85;
+  white-space: nowrap;
+  background: rgba(250, 246, 240, 0.1);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
 /* ── 낙하 물체 태그 ── */
 .obstacle-tag {
   position: absolute;
