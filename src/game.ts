@@ -39,8 +39,8 @@ const MAX_OBSTACLE_FALL_SPEED = 1.0;
 const KIN_FALL_SUBSTEP_MAX_SEC = 1 / 120;
 const KIN_FALL_MAX_DOWN_PER_SUB = 0.018 * OU;
 /** 동시 낙하 허용 개수 — 한 번에 하나씩 */
-/** 탑 꼭대기가 화면 상단 어느 정도(0~1)에 도달해야 성공인지 (기존 0.082 -> 0.18로 완화) */
-const WIN_STACK_TOP_FROM_TOP = 0.18;
+/** 탑 꼭대기가 화면 상단 어느 정도(0~1)에 도달해야 성공인지 (기존 0.18 -> 0.12로 조정) */
+const WIN_STACK_TOP_FROM_TOP = 0.12;
 
 interface Piece {
   mesh: THREE.Object3D;
